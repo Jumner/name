@@ -38,7 +38,7 @@ fn get_settings() -> Result<Settings, Box<dyn Error>> {
 
 fn get_course(file: &Path) -> Result<String, Box<dyn Error>> {
 	let course = file
-		.canonicalize()?.to_str().unwrap().split('/').rev().nth(1).unwrap().to_string();
+		.canonicalize()?.to_str().unwrap().split('/').rev().nth(1).unwrap().split(' ').next().unwrap().to_string();
 	Ok(course)
 }
 
@@ -52,9 +52,17 @@ fn rename_file(settings: Settings, args: Args) -> Result<(), Box<dyn Error>> {
 	let file_extension = get_file_extension(&args.file)?;
 	let new_name = format!(
 		"{}_{}_{}_{}_{}.{}",
-		settings.student_id, settings.last, settings.first, course, args.name, file_extension
+		settings.student_id, settings.last, settings.first, course, args.name.replace(" ", "_"), file_extension
 	);
-	println!("Renaming {:?} to \"{}\"", args.file, new_name);
-	fs::rename(args.file.to_str().unwrap(), new_name.as_str())?;
+	rename(args.file.to_str().unwrap(), new_name.as_str());
 	Ok(())
 }
+
+fn rename(start : &str, end : &str) {
+	println!("Renaming {} to {}", start, end);
+	if fs::rename(start, end).is_err() {
+		rename(start, end);
+	} else {
+	println!("Done Rename");
+	
+}}
